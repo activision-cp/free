@@ -8,7 +8,7 @@ const JSONBIN_BIN_ID = "6ab25a71ac6210605ae907b4";
 const JSONBIN_MASTER_KEY = "$2a$10$oGReJnRpwfemqjS80PYgN.qlSXGh6iBf0bWnVVc.Q0f3c4b5V37kO";
 
 const images = {
-    hero: "hero.webp",
+    hero: "hero.jpg",
     logo: "images/logo.png",
     reward1: "images/reward-1.jpg",
     reward2: "images/reward-2.jpg",
